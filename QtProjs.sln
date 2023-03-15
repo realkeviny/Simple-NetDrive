@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32516.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetDrive", "NetDrive\NetDrive.vcxproj", "{55211778-F152-4533-8F05-3777E8010E22}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetDriveServer", "NetDriveServer\NetDriveServer.vcxproj", "{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{55211778-F152-4533-8F05-3777E8010E22}.Debug|x64.ActiveCfg = Debug|x64
+		{55211778-F152-4533-8F05-3777E8010E22}.Debug|x64.Build.0 = Debug|x64
+		{55211778-F152-4533-8F05-3777E8010E22}.Debug|x86.ActiveCfg = Debug|x64
+		{55211778-F152-4533-8F05-3777E8010E22}.Debug|x86.Build.0 = Debug|x64
+		{55211778-F152-4533-8F05-3777E8010E22}.Release|x64.ActiveCfg = Release|x64
+		{55211778-F152-4533-8F05-3777E8010E22}.Release|x64.Build.0 = Release|x64
+		{55211778-F152-4533-8F05-3777E8010E22}.Release|x86.ActiveCfg = Release|x64
+		{55211778-F152-4533-8F05-3777E8010E22}.Release|x86.Build.0 = Release|x64
+		{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}.Debug|x64.ActiveCfg = Debug|x64
+		{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}.Debug|x64.Build.0 = Debug|x64
+		{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}.Debug|x86.ActiveCfg = Debug|x64
+		{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}.Debug|x86.Build.0 = Debug|x64
+		{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}.Release|x64.ActiveCfg = Release|x64
+		{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}.Release|x64.Build.0 = Release|x64
+		{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}.Release|x86.ActiveCfg = Release|x64
+		{8FAD43D9-4A8A-4C25-8FEE-6E6459D68C3C}.Release|x86.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CC81CB64-FD80-476B-B860-13FC6E8D74C0}
+	EndGlobalSection
+EndGlobal

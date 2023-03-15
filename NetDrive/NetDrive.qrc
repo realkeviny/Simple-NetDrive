@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/NetDrive">
+        <file>Client.config</file>
+    </qresource>
+</RCC>
