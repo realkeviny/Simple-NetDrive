@@ -31,7 +31,7 @@ void TcpSocket::receiveMessage()
 		{
 			strcpy(respondPDU->Data, REGISTER_OK);
 			QDir dir;
-			qDebug() << dir.mkdir(QString("./%1").arg(nameMsg));
+			qDebug() << dir.mkdir(QString("D:/UserFiles/%1").arg(nameMsg));
 		}
 		else
 		{
@@ -228,8 +228,45 @@ void TcpSocket::receiveMessage()
 		}
 		break;
 	}
-	default:
+	case CREATE_DIRECTORY_REQUEST:
+	{
+		QDir dir;
+		QString strCurrentPath = QString("%1").arg((char*)(pdu->Msg));
+		qDebug() << strCurrentPath;
+		bool ret = dir.exists(strCurrentPath);
+		PDU* resPDU = nullptr;
+		if (ret)//当前目录存在
+		{
+			//判断下级目录有无同名文件夹
+			char newDir[64] = { '\0' };
+			memcpy(newDir, pdu->Data + 64, 64);
+			QString strNewPath = strCurrentPath + "/" + newDir;
+			qDebug() << strNewPath;
+			ret = dir.exists(strNewPath);
+			qDebug() << "-->" << ret;
+			if (ret)//创建文件名已存在
+			{
+				resPDU = makePDU(0);
+				resPDU->MsgType = CREATE_DIRECTORY_RESPOND;
+				strcpy(resPDU->Data, FILENAME_ALREADY_EXIST);
+			}
+			else//创建文件名不存在
+			{
+				dir.mkdir(strNewPath);
+				resPDU = makePDU(0);
+				resPDU->MsgType = CREATE_DIRECTORY_RESPOND;
+				strcpy(resPDU->Data, CREATE_DIRECTORY_SUCCESS);
+			}
+		}
+		else//当前目录不存在
+		{
+			resPDU = makePDU(0);
+			resPDU->MsgType = CREATE_DIRECTORY_RESPOND;
+			strcpy(resPDU->Data, DIRECTORY_NOT_EXIST);
+		}
+		write((char*)resPDU, resPDU->PDULen);
 		break;
+	}
 	}
 	free(pdu);
 	pdu = nullptr;

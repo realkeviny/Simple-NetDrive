@@ -8,9 +8,9 @@ BookWidget::BookWidget(QWidget* parent)
 {
 	m_BookList = new QListWidget;
 	m_btnReturn = new QPushButton("Back");
-	m_btnCreateFolder = new QPushButton("Create a Directory");
-	m_btnDeleteFolder = new QPushButton("Remove a Directory");
-	m_btnRenameFolder = new QPushButton("Rename a Directory");
+	m_btnCreateFolder = new QPushButton("Create Directory");
+	m_btnDeleteFolder = new QPushButton("Remove Directory");
+	m_btnRenameFolder = new QPushButton("Rename");
 	m_btnRefresh = new QPushButton("Refresh");
 
 	QVBoxLayout* directoryButtonSet = new QVBoxLayout;
@@ -38,7 +38,7 @@ BookWidget::BookWidget(QWidget* parent)
 
 	setLayout(mainLayout);
 
-	connect(m_btnCreateFolder, SIGNAL(clicked()), this, SLOT(onbtnCreateFolderClicked()));
+	connect(m_btnCreateFolder, SIGNAL(clicked(bool)), this, SLOT(onbtnCreateFolderClicked()));
 }
 
 BookWidget::~BookWidget()
@@ -49,22 +49,21 @@ void BookWidget::onbtnCreateFolderClicked()
 	QString strNewDir = QInputDialog::getText(this, "New Folder", "New Folder Name..");
 	if (!strNewDir.isEmpty())
 	{
-		if(strNewDir.size() > 32)
+		if (strNewDir.size() > 64)
 		{
 			QMessageBox::warning(this, "Warning", "Folder name is too long!");
 		}
 		else
 		{
-
 			QString strName = NetDrive::getInstance().getLoginName();
 			QString strCurrentPath = NetDrive::getInstance().getCurrentPath();
 			PDU* pdu = makePDU(strCurrentPath.size() + 1);
 			pdu->MsgType = CREATE_DIRECTORY_REQUEST;
 			strncpy(pdu->Data, strName.toStdString().c_str(), strName.size());
-			strncpy(pdu->Data + 64, strCurrentPath.toStdString().c_str(), strCurrentPath.size());
+			strncpy(pdu->Data + 64, strNewDir.toStdString().c_str(), strNewDir.size());
 			memcpy(pdu->Msg, strCurrentPath.toStdString().c_str(), strCurrentPath.size());
 
-			NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu),pdu->PDULen);
+			NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
 			free(pdu);
 			pdu = nullptr;
 		}

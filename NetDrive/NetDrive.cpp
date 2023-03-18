@@ -143,7 +143,7 @@ void NetDrive::receiveMessage()
 	{
 		if (0 == strcmp(pdu->Data, LOGIN_OK))
 		{
-			currentPath = QString("./%1").arg(strNameLogin);
+			currentPath = QString("D:/UserFiles/%1").arg(strNameLogin);
 			QMessageBox::information(this, "Information", LOGIN_OK);
 			OperationWidget::getInstance().show();
 			hide();
@@ -251,6 +251,11 @@ void NetDrive::receiveMessage()
 	case GROUP_CHAT_REQUEST:
 	{
 		OperationWidget::getInstance().getFriendList()->updateGroupMessage(pdu);
+		break;
+	}
+	case CREATE_DIRECTORY_RESPOND:
+	{
+		QMessageBox::information(this, "Directory Creating", pdu->Data);
 		break;
 	}
 	default:

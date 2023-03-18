@@ -16,6 +16,10 @@
 #define USER_OFFLINE "User offline!"
 #define USER_NOT_EXIST "User Not Found!"
 #define FRIEND_DELETED "Deleted!"
+#define DIRECTORY_NOT_EXIST "Invalid Directory!"
+#define DIRECTORY_ALREADY_EXIST "Directory Already Created!"
+#define FILENAME_ALREADY_EXIST "Duplicate FileName!"
+#define CREATE_DIRECTORY_SUCCESS "Successfully Create Directory!"
 
 enum MSG_TYPE
 {

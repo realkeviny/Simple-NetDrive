@@ -15,7 +15,6 @@ public:
 	explicit BookWidget(QWidget* parent = 0);
 	~BookWidget();
 
-
 private slots:
 	void onbtnCreateFolderClicked();
 private:
