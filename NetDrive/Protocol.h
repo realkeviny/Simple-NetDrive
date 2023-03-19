@@ -16,6 +16,10 @@
 #define USER_OFFLINE "User offline!"
 #define USER_NOT_EXIST "User Not Found!"
 #define FRIEND_DELETED "Deleted!"
+#define DIRECTORY_NOT_EXIST "Invalid Directory!"
+#define DIRECTORY_ALREADY_EXIST "Directory Already Created!"
+#define FILENAME_ALREADY_EXIST "Duplicate FileName!"
+#define CREATE_DIRECTORY_SUCCESS "Successfully Create Directory!"
 
 enum MSG_TYPE
 {
@@ -42,7 +46,15 @@ enum MSG_TYPE
 	GROUP_CHAT_RESPOND,//群聊回复
 	CREATE_DIRECTORY_REQUEST,//目录创建请求
 	CREATE_DIRECTORY_RESPOND,//目录创建回应
+	REFRESH_REQUEST,//刷新请求
+	REFRESH_RESPOND,//刷新回应
 	MAX = 0x00ffffff
+};
+
+struct FileInfo
+{
+	char fileName[64];//文件名
+	int fileType;//文件类型
 };
 
 struct PDU

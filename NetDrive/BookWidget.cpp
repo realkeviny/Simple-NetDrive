@@ -39,6 +39,7 @@ BookWidget::BookWidget(QWidget* parent)
 	setLayout(mainLayout);
 
 	connect(m_btnCreateFolder, SIGNAL(clicked(bool)), this, SLOT(onbtnCreateFolderClicked()));
+	connect(m_btnRefresh, SIGNAL(clicked()), this, SLOT(onBtnRefreshClicked()));
 }
 
 BookWidget::~BookWidget()
@@ -72,4 +73,16 @@ void BookWidget::onbtnCreateFolderClicked()
 	{
 		QMessageBox::warning(this, "Warning", "Can't left folder name empty!");
 	}
+}
+
+void BookWidget::onBtnRefreshClicked()
+{
+	QString currentPath = NetDrive::getInstance().getCurrentPath();
+	PDU* pdu = makePDU(currentPath.size() + 1);
+	pdu->MsgType = REFRESH_REQUEST;
+	strncpy(reinterpret_cast<char*>(pdu->Msg), currentPath.toStdString().c_str(), currentPath.size());
+
+	NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+	free(pdu);
+	pdu = nullptr;
 }

@@ -17,6 +17,7 @@ public:
 
 private slots:
 	void onbtnCreateFolderClicked();
+	void onBtnRefreshClicked();
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;

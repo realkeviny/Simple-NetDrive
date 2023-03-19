@@ -46,7 +46,15 @@ enum MSG_TYPE
 	GROUP_CHAT_RESPOND,//群聊回复
 	CREATE_DIRECTORY_REQUEST,//目录创建请求
 	CREATE_DIRECTORY_RESPOND,//目录创建回应
+	REFRESH_REQUEST,//刷新请求
+	REFRESH_RESPOND,//刷新回应
 	MAX = 0x00ffffff
+};
+
+struct FileInfo
+{
+	char fileName[64];//文件名
+	int fileType;//文件类型
 };
 
 struct PDU

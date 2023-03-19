@@ -1,6 +1,7 @@
 #include "TcpSocket.h"
 #include <QDebug>
 #include "TcpServer.h"
+#include <QFileInfoList>
 
 TcpSocket::TcpSocket()
 {
@@ -244,13 +245,13 @@ void TcpSocket::receiveMessage()
 			qDebug() << strNewPath;
 			ret = dir.exists(strNewPath);
 			qDebug() << "-->" << ret;
-			if (ret)//创建文件名已存在
+			if (ret)//子目录名同名
 			{
 				resPDU = makePDU(0);
 				resPDU->MsgType = CREATE_DIRECTORY_RESPOND;
 				strcpy(resPDU->Data, FILENAME_ALREADY_EXIST);
 			}
-			else//创建文件名不存在
+			else//子目录名不存在
 			{
 				dir.mkdir(strNewPath);
 				resPDU = makePDU(0);
@@ -265,6 +266,20 @@ void TcpSocket::receiveMessage()
 			strcpy(resPDU->Data, DIRECTORY_NOT_EXIST);
 		}
 		write((char*)resPDU, resPDU->PDULen);
+		break;
+	}
+	case REFRESH_REQUEST:
+	{
+		char* currentPath = new char[pdu->MsgLen];
+		memcpy(currentPath, pdu->Msg, pdu->MsgLen);
+		QDir dir(currentPath);
+		QFileInfoList fileInfoList = dir.entryInfoList();
+		int fileCount = fileInfoList.size();
+		PDU* responsePDU = makePDU(sizeof(FileInfo) * fileCount);
+		for (int i = 0; i < fileCount; i++)
+		{
+			qDebug() << fileInfoList[i].fileName() << fileInfoList[i].size() << " Folder: " << fileInfoList[i].isDir() << " Ordinary files: " << fileInfoList[i].isFile();
+		}
 		break;
 	}
 	}
