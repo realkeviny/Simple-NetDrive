@@ -45,6 +45,43 @@ BookWidget::BookWidget(QWidget* parent)
 BookWidget::~BookWidget()
 {}
 
+void BookWidget::updateFileList(const PDU* pdu)
+{
+	if (nullptr == pdu)
+	{
+		return;
+	}
+
+	QListWidgetItem* temp = nullptr;
+	int totalRow = m_BookList->count();
+	while (m_BookList->count() > 0)
+	{
+		temp = m_BookList->item(totalRow - 1);
+		m_BookList->removeItemWidget(temp);
+		delete temp;
+		totalRow--;
+	}
+
+	FileInfo* pointerFileInfo = nullptr;
+	int count = pdu->MsgLen / sizeof(FileInfo);
+	for (int index = 0; index < count; index++)
+	{
+		pointerFileInfo = (FileInfo*)(pdu->Msg) + index;
+		qDebug() << pointerFileInfo->fileName << pointerFileInfo->fileType;
+		QListWidgetItem* item = new QListWidgetItem;
+		if (0 == pointerFileInfo->fileType)
+		{
+			item->setIcon(QIcon(QPixmap(":/Icons/Folder.png")));
+		}
+		else if (1 == pointerFileInfo->fileType)
+		{
+			item->setIcon(QIcon(QPixmap(":/Icons/File.png")));
+		}
+		item->setText(pointerFileInfo->fileName);
+		m_BookList->addItem(item);
+	}
+}
+
 void BookWidget::onbtnCreateFolderClicked()
 {
 	QString strNewDir = QInputDialog::getText(this, "New Folder", "New Folder Name..");

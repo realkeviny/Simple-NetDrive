@@ -266,6 +266,8 @@ void TcpSocket::receiveMessage()
 			strcpy(resPDU->Data, DIRECTORY_NOT_EXIST);
 		}
 		write((char*)resPDU, resPDU->PDULen);
+		free(resPDU);
+		resPDU = nullptr;
 		break;
 	}
 	case REFRESH_REQUEST:
@@ -276,10 +278,27 @@ void TcpSocket::receiveMessage()
 		QFileInfoList fileInfoList = dir.entryInfoList();
 		int fileCount = fileInfoList.size();
 		PDU* responsePDU = makePDU(sizeof(FileInfo) * fileCount);
+		responsePDU->MsgType = REFRESH_RESPOND;
+		FileInfo* pointerFileInfo = nullptr;
+		QString StrfileName;
 		for (int i = 0; i < fileCount; i++)
 		{
-			qDebug() << fileInfoList[i].fileName() << fileInfoList[i].size() << " Folder: " << fileInfoList[i].isDir() << " Ordinary files: " << fileInfoList[i].isFile();
+			pointerFileInfo = reinterpret_cast<FileInfo*>(responsePDU->Msg) + i;
+			StrfileName = fileInfoList[i].fileName();
+
+			memcpy(pointerFileInfo->fileName, StrfileName.toStdString().c_str(), StrfileName.size());
+			if (fileInfoList[i].isDir())
+			{
+				pointerFileInfo->fileType = 0;//Folder
+			}
+			else if (fileInfoList[i].isFile())
+			{
+				pointerFileInfo->fileType = 1;//File
+			}
 		}
+		write((char*)responsePDU, responsePDU->PDULen);
+		free(responsePDU);
+		responsePDU = nullptr;
 		break;
 	}
 	}

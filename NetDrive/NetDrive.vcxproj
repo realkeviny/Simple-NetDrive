@@ -103,6 +103,7 @@
     <ClCompile Include="OnlineUsers.cpp" />
     <ClCompile Include="OperationWidget.cpp" />
     <ClCompile Include="Protocol.cpp" />
+    <QtRcc Include="FileType.qrc" />
     <QtRcc Include="NetDrive.qrc" />
     <QtUic Include="Chatting.ui" />
     <QtUic Include="NetDrive.ui" />

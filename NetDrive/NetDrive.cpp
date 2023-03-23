@@ -258,6 +258,11 @@ void NetDrive::receiveMessage()
 		QMessageBox::information(this, "Directory Creating", pdu->Data);
 		break;
 	}
+	case REFRESH_RESPOND:
+	{
+		OperationWidget::getInstance().getBook()->updateFileList(pdu);
+		break;
+	}
 	default:
 		break;
 	}

@@ -14,6 +14,7 @@ class BookWidget : public QWidget
 public:
 	explicit BookWidget(QWidget* parent = 0);
 	~BookWidget();
+	void updateFileList(const PDU* pdu);
 
 private slots:
 	void onbtnCreateFolderClicked();

@@ -14,6 +14,7 @@ public:
 	explicit OperationWidget(QWidget* parent = 0);
 	static OperationWidget& getInstance();
 	FriendList* getFriendList() const;
+	BookWidget* getBook() const;
 
 private:
 	QListWidget* listW;

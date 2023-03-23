@@ -33,3 +33,8 @@ FriendList* OperationWidget::getFriendList() const
 {
 	return friendList;
 }
+
+BookWidget* OperationWidget::getBook() const
+{
+	return bookList;
+}
