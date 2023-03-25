@@ -301,6 +301,46 @@ void TcpSocket::receiveMessage()
 		responsePDU = nullptr;
 		break;
 	}
+	case DELETE_DIRECTORY_REQUEST:
+	{
+		char dirName[64] = { '\0' };
+		strcpy(dirName, pdu->Data);
+		char* path = new char[pdu->MsgLen];
+		memcpy(path, pdu->Msg, pdu->MsgLen);
+		QString fullPath = QString("%1/%2").arg(path).arg(dirName);
+
+		QFileInfo fileInfo(fullPath);
+		bool ret = false;
+		if (fileInfo.isDir())
+		{
+			QDir dir;
+			dir.setPath(fullPath);
+			ret = dir.removeRecursively();
+		}
+		else if (fileInfo.isFile())//常规文件
+		{
+			ret = false;
+		}
+
+		PDU* responsePDU = nullptr;
+		if (ret)
+		{
+			responsePDU = makePDU(strlen(DELETE_DIRECTORY_SUCCESS) + 1);
+			responsePDU->MsgType = DELETE_DIRECTORY_RESPOND;
+			memcpy(responsePDU->Data, DELETE_DIRECTORY_SUCCESS, strlen(DELETE_DIRECTORY_SUCCESS));
+		}
+		else
+		{
+			responsePDU = makePDU(strlen(DELETE_DIRECTORY_FAILURE) + 1);
+			responsePDU->MsgType = DELETE_DIRECTORY_RESPOND;
+			memcpy(responsePDU->Data, DELETE_DIRECTORY_FAILURE, strlen(DELETE_DIRECTORY_FAILURE));
+		}
+
+		write((char*)responsePDU, responsePDU->PDULen);
+		free(responsePDU);
+		responsePDU = nullptr;
+		break;
+	}
 	}
 	free(pdu);
 	pdu = nullptr;

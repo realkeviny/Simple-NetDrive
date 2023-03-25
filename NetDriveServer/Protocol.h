@@ -20,6 +20,8 @@
 #define DIRECTORY_ALREADY_EXIST "Directory Already Created!"
 #define FILENAME_ALREADY_EXIST "Duplicate FileName!"
 #define CREATE_DIRECTORY_SUCCESS "Successfully Create Directory!"
+#define DELETE_DIRECTORY_SUCCESS "Successfully Deleted Directory!"
+#define DELETE_DIRECTORY_FAILURE "Failed to delete directory: not a directory"
 
 enum MSG_TYPE
 {
@@ -48,6 +50,8 @@ enum MSG_TYPE
 	CREATE_DIRECTORY_RESPOND,//目录创建回应
 	REFRESH_REQUEST,//刷新请求
 	REFRESH_RESPOND,//刷新回应
+	DELETE_DIRECTORY_REQUEST,//目录删除请求
+	DELETE_DIRECTORY_RESPOND,//目录删除回应
 	MAX = 0x00ffffff
 };
 

@@ -40,6 +40,7 @@ BookWidget::BookWidget(QWidget* parent)
 
 	connect(m_btnCreateFolder, SIGNAL(clicked(bool)), this, SLOT(onbtnCreateFolderClicked()));
 	connect(m_btnRefresh, SIGNAL(clicked()), this, SLOT(onBtnRefreshClicked()));
+	connect(m_btnDeleteFolder, SIGNAL(clicked()), this, SLOT(onBtnDeleteFolderClicked()));
 }
 
 BookWidget::~BookWidget()
@@ -122,4 +123,25 @@ void BookWidget::onBtnRefreshClicked()
 	NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
 	free(pdu);
 	pdu = nullptr;
+}
+
+void BookWidget::onBtnDeleteFolderClicked()
+{
+	QString currentPath = NetDrive::getInstance().getCurrentPath();
+	QListWidgetItem* item = m_BookList->currentItem();
+	if (nullptr == item)
+	{
+		QMessageBox::warning(this, "Delete Directory", "Please choose a directory to remove!");
+	}
+	else
+	{
+		QString strDelName = item->text();
+		PDU* pdu = makePDU(currentPath.size() + 1);
+		pdu->MsgType = DELETE_DIRECTORY_REQUEST;
+		strncpy(pdu->Data, strDelName.toStdString().c_str(), strDelName.size());
+		memcpy(pdu->Msg, currentPath.toStdString().c_str(), currentPath.size());
+		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+		free(pdu);
+		pdu = nullptr;
+	}
 }

@@ -263,6 +263,11 @@ void NetDrive::receiveMessage()
 		OperationWidget::getInstance().getBook()->updateFileList(pdu);
 		break;
 	}
+	case DELETE_DIRECTORY_RESPOND:
+	{
+		QMessageBox::information(this, "Directory Removing", pdu->Data);
+		break;
+	}
 	default:
 		break;
 	}
