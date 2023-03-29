@@ -20,12 +20,13 @@ private slots:
 	void onbtnCreateFolderClicked();
 	void onBtnRefreshClicked();
 	void onBtnDeleteFolderClicked();
+	void onBtnRenameClicked();
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;
 	QPushButton* m_btnCreateFolder;
 	QPushButton* m_btnDeleteFolder;
-	QPushButton* m_btnRenameFolder;
+	QPushButton* m_btnRename;
 	QPushButton* m_btnRefresh;
 	QPushButton* m_btnUploadFile;
 	QPushButton* m_btnDownloadFile;

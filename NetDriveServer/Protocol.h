@@ -22,6 +22,8 @@
 #define CREATE_DIRECTORY_SUCCESS "Successfully Create Directory!"
 #define DELETE_DIRECTORY_SUCCESS "Successfully Deleted Directory!"
 #define DELETE_DIRECTORY_FAILURE "Failed to delete directory: not a directory"
+#define RENAMING_SUCCESS "Success"
+#define RENAMING_FAILURE "Failed"
 
 enum MSG_TYPE
 {
@@ -52,6 +54,8 @@ enum MSG_TYPE
 	REFRESH_RESPOND,//刷新回应
 	DELETE_DIRECTORY_REQUEST,//目录删除请求
 	DELETE_DIRECTORY_RESPOND,//目录删除回应
+	RENAME_REQUEST,//重命名请求
+	RENAME_RESPOND,//重命名回复
 	MAX = 0x00ffffff
 };
 

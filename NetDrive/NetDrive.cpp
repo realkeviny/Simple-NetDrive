@@ -268,6 +268,11 @@ void NetDrive::receiveMessage()
 		QMessageBox::information(this, "Directory Removing", pdu->Data);
 		break;
 	}
+	case RENAME_RESPOND:
+	{
+		QMessageBox::information(this, "Renaming", pdu->Data);
+		break;
+	}
 	default:
 		break;
 	}

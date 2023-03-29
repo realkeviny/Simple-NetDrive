@@ -10,14 +10,14 @@ BookWidget::BookWidget(QWidget* parent)
 	m_btnReturn = new QPushButton("Back");
 	m_btnCreateFolder = new QPushButton("Create Directory");
 	m_btnDeleteFolder = new QPushButton("Remove Directory");
-	m_btnRenameFolder = new QPushButton("Rename");
+	m_btnRename = new QPushButton("Rename");
 	m_btnRefresh = new QPushButton("Refresh");
 
 	QVBoxLayout* directoryButtonSet = new QVBoxLayout;
 	directoryButtonSet->addWidget(m_btnReturn);
 	directoryButtonSet->addWidget(m_btnCreateFolder);
 	directoryButtonSet->addWidget(m_btnDeleteFolder);
-	directoryButtonSet->addWidget(m_btnRenameFolder);
+	directoryButtonSet->addWidget(m_btnRename);
 	directoryButtonSet->addWidget(m_btnRefresh);
 
 	m_btnUploadFile = new QPushButton("Upload");
@@ -41,6 +41,7 @@ BookWidget::BookWidget(QWidget* parent)
 	connect(m_btnCreateFolder, SIGNAL(clicked(bool)), this, SLOT(onbtnCreateFolderClicked()));
 	connect(m_btnRefresh, SIGNAL(clicked()), this, SLOT(onBtnRefreshClicked()));
 	connect(m_btnDeleteFolder, SIGNAL(clicked()), this, SLOT(onBtnDeleteFolderClicked()));
+	connect(m_btnRename, SIGNAL(clicked()), this, SLOT(onBtnRenameClicked()));
 }
 
 BookWidget::~BookWidget()
@@ -143,5 +144,35 @@ void BookWidget::onBtnDeleteFolderClicked()
 		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
 		free(pdu);
 		pdu = nullptr;
+	}
+}
+
+void BookWidget::onBtnRenameClicked()
+{
+	QString currentPath = NetDrive::getInstance().getCurrentPath();
+	QListWidgetItem* item = m_BookList->currentItem();
+	if (nullptr == item)
+	{
+		QMessageBox::warning(this, "File Renaming", "Please choose a file to rename!");
+	}
+	else
+	{
+		QString strOldName = item->text();
+		QString strNewName = QInputDialog::getText(this, "Renaming", "Input new file name:");
+		if (!strNewName.isEmpty())
+		{
+			PDU* pdu = makePDU(currentPath.size() + 1);
+			pdu->MsgType = RENAME_REQUEST;
+			strncpy(pdu->Data, strOldName.toStdString().c_str(), strOldName.size());
+			strncpy(pdu->Data + 64, strNewName.toStdString().c_str(), strNewName.size());
+			memcpy(pdu->Msg, currentPath.toStdString().c_str(), currentPath.size());
+			NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+			free(pdu);
+			pdu = nullptr;
+		}
+		else
+		{
+			QMessageBox::warning(this, "File Renaming", "Characters required!");
+		}
 	}
 }

@@ -341,6 +341,39 @@ void TcpSocket::receiveMessage()
 		responsePDU = nullptr;
 		break;
 	}
+	case RENAME_REQUEST:
+	{
+		char oldName[64] = { '\0' };
+		char newName[64] = { '\0' };
+		strncpy(oldName, pdu->Data, 64);
+		strncpy(newName, pdu->Data + 64, 64);
+
+		char* path = new char[pdu->MsgLen];
+		memcpy(path, pdu->Msg, pdu->MsgLen);
+
+		QString oldPath = QString("%1/%2").arg(path).arg(oldName);
+		QString newPath = QString("%1/%2").arg(path).arg(newName);
+
+		qDebug() << oldPath;
+		qDebug() << newPath;
+
+		QDir dir;
+		bool ret = dir.rename(oldPath, newPath);
+		PDU* responsePDU = makePDU(0);
+		responsePDU->MsgType = RENAME_RESPOND;
+		if (ret)
+		{
+			strcpy(responsePDU->Data, RENAMING_SUCCESS);
+		}
+		else
+		{
+			strcpy(responsePDU->Data, RENAMING_FAILURE);
+		}
+		write((char*)responsePDU, responsePDU->PDULen);
+		free(responsePDU);
+		responsePDU = nullptr;
+		break;
+	}
 	}
 	free(pdu);
 	pdu = nullptr;
