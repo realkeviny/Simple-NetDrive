@@ -15,12 +15,15 @@ public:
 	explicit BookWidget(QWidget* parent = 0);
 	~BookWidget();
 	void updateFileList(const PDU* pdu);
+	void clearEnteredDir();
+	QString enteredDir();
 
 private slots:
 	void onbtnCreateFolderClicked();
 	void onBtnRefreshClicked();
 	void onBtnDeleteFolderClicked();
 	void onBtnRenameClicked();
+	void onListDoubleClicked(const QModelIndex& index);
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;
@@ -32,4 +35,6 @@ private:
 	QPushButton* m_btnDownloadFile;
 	QPushButton* m_btnDeleteFile;
 	QPushButton* m_btnShare;
+
+	QString strEnteredDir;
 };

@@ -261,6 +261,12 @@ void NetDrive::receiveMessage()
 	case REFRESH_RESPOND:
 	{
 		OperationWidget::getInstance().getBook()->updateFileList(pdu);
+		QString enteredDir = OperationWidget::getInstance().getBook()->enteredDir();
+		if (!enteredDir.isEmpty())
+		{
+			currentPath = currentPath + "/" + enteredDir;
+			qDebug() << "Entering:" << currentPath;
+		}
 		break;
 	}
 	case DELETE_DIRECTORY_RESPOND:
@@ -271,6 +277,12 @@ void NetDrive::receiveMessage()
 	case RENAME_RESPOND:
 	{
 		QMessageBox::information(this, "Renaming", pdu->Data);
+		break;
+	}
+	case ENTER_DIRECTORY_RESPOND:
+	{
+		OperationWidget::getInstance().getBook()->clearEnteredDir();
+		QMessageBox::information(this, "Entering Directory", pdu->Data);
 		break;
 	}
 	default:

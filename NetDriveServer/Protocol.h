@@ -24,6 +24,8 @@
 #define DELETE_DIRECTORY_FAILURE "Failed to delete directory: not a directory"
 #define RENAMING_SUCCESS "Success"
 #define RENAMING_FAILURE "Failed"
+#define ENTERING_SUCCEESS
+#define ENTERING_FAILURE "Failed to enter directory: Not a directory"
 
 enum MSG_TYPE
 {
@@ -56,6 +58,8 @@ enum MSG_TYPE
 	DELETE_DIRECTORY_RESPOND,//目录删除回应
 	RENAME_REQUEST,//重命名请求
 	RENAME_RESPOND,//重命名回复
+	ENTER_DIRECTORY_REQUEST,//进入文件夹请求
+	ENTER_DIRECTORY_RESPOND,//进入文件夹回应
 	MAX = 0x00ffffff
 };
 

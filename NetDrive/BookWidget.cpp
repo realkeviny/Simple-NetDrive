@@ -6,6 +6,8 @@
 BookWidget::BookWidget(QWidget* parent)
 	: QWidget(parent)
 {
+	strEnteredDir.clear();
+
 	m_BookList = new QListWidget;
 	m_btnReturn = new QPushButton("Back");
 	m_btnCreateFolder = new QPushButton("Create Directory");
@@ -42,6 +44,7 @@ BookWidget::BookWidget(QWidget* parent)
 	connect(m_btnRefresh, SIGNAL(clicked()), this, SLOT(onBtnRefreshClicked()));
 	connect(m_btnDeleteFolder, SIGNAL(clicked()), this, SLOT(onBtnDeleteFolderClicked()));
 	connect(m_btnRename, SIGNAL(clicked()), this, SLOT(onBtnRenameClicked()));
+	connect(m_BookList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onListDoubleClicked(QModelIndex)));
 }
 
 BookWidget::~BookWidget()
@@ -82,6 +85,16 @@ void BookWidget::updateFileList(const PDU* pdu)
 		item->setText(pointerFileInfo->fileName);
 		m_BookList->addItem(item);
 	}
+}
+
+void BookWidget::clearEnteredDir()
+{
+	strEnteredDir.clear();
+}
+
+QString BookWidget::enteredDir()
+{
+	return strEnteredDir;
 }
 
 void BookWidget::onbtnCreateFolderClicked()
@@ -175,4 +188,19 @@ void BookWidget::onBtnRenameClicked()
 			QMessageBox::warning(this, "File Renaming", "Characters required!");
 		}
 	}
+}
+
+void BookWidget::onListDoubleClicked(const QModelIndex& index)
+{
+	QString strDirName = index.data().toString();
+	strEnteredDir = strDirName;
+	QString currentPath = NetDrive::getInstance().getCurrentPath();
+	PDU* pdu = makePDU(currentPath.size() + 1);
+	pdu->MsgType = ENTER_DIRECTORY_REQUEST;
+	strncpy(pdu->Data, strDirName.toStdString().c_str(), strDirName.size());
+	memcpy(pdu->Msg, currentPath.toStdString().c_str(), currentPath.size());
+
+	NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+	free(pdu);
+	pdu = nullptr;
 }

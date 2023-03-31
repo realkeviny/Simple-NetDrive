@@ -374,6 +374,59 @@ void TcpSocket::receiveMessage()
 		responsePDU = nullptr;
 		break;
 	}
+	case ENTER_DIRECTORY_REQUEST:
+	{
+		char enteringName[64] = { '\0' };
+		strncpy(enteringName, pdu->Data, 64);
+
+		char* path = new char[pdu->MsgLen];
+		memcpy(path, pdu->Msg, pdu->MsgLen);
+
+		QString fullPath = QString("%1/%2").arg(path).arg(enteringName);
+
+		qDebug() << fullPath;
+		QFileInfo fileInfo(fullPath);
+		PDU* responsePDU = nullptr;
+		if (fileInfo.isDir())
+		{
+			QDir dir(fullPath);
+			QFileInfoList fileInfoList = dir.entryInfoList();
+			int fileCount = fileInfoList.size();
+			PDU* responsePDU = makePDU(sizeof(FileInfo) * fileCount);
+			responsePDU->MsgType = REFRESH_RESPOND;
+			FileInfo* pointerFileInfo = nullptr;
+			QString StrfileName;
+			for (int i = 0; i < fileCount; i++)
+			{
+				pointerFileInfo = reinterpret_cast<FileInfo*>(responsePDU->Msg) + i;
+				StrfileName = fileInfoList[i].fileName();
+
+				memcpy(pointerFileInfo->fileName, StrfileName.toStdString().c_str(), StrfileName.size());
+				if (fileInfoList[i].isDir())
+				{
+					pointerFileInfo->fileType = 0;//Folder
+				}
+				else if (fileInfoList[i].isFile())
+				{
+					pointerFileInfo->fileType = 1;//File
+				}
+			}
+			write((char*)responsePDU, responsePDU->PDULen);
+			free(responsePDU);
+			responsePDU = nullptr;
+		}
+		else if (fileInfo.isFile())
+		{
+			responsePDU = makePDU(0);
+			responsePDU->MsgType = ENTER_DIRECTORY_RESPOND;
+			strcpy(responsePDU->Data, ENTERING_FAILURE);
+
+			write((char*)responsePDU, responsePDU->PDULen);
+			free(responsePDU);
+			responsePDU = nullptr;
+		}
+		break;
+	}
 	}
 	free(pdu);
 	pdu = nullptr;
