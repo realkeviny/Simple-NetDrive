@@ -24,6 +24,7 @@ private slots:
 	void onBtnDeleteFolderClicked();
 	void onBtnRenameClicked();
 	void onListDoubleClicked(const QModelIndex& index);
+	void onBtnReturnClicked();
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;

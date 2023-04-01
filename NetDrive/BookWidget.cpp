@@ -45,6 +45,7 @@ BookWidget::BookWidget(QWidget* parent)
 	connect(m_btnDeleteFolder, SIGNAL(clicked()), this, SLOT(onBtnDeleteFolderClicked()));
 	connect(m_btnRename, SIGNAL(clicked()), this, SLOT(onBtnRenameClicked()));
 	connect(m_BookList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onListDoubleClicked(QModelIndex)));
+	connect(m_btnReturn, SIGNAL(clicked()), this, SLOT(onBtnReturnClicked()));
 }
 
 BookWidget::~BookWidget()
@@ -203,4 +204,25 @@ void BookWidget::onListDoubleClicked(const QModelIndex& index)
 	NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
 	free(pdu);
 	pdu = nullptr;
+}
+
+void BookWidget::onBtnReturnClicked()
+{
+	QString currentPath = NetDrive::getInstance().getCurrentPath();
+	QString rootPath = "D:/UserFiles/" + NetDrive::getInstance().getLoginName();
+	if (currentPath == rootPath)
+	{
+		QMessageBox::warning(this, "Returning", "Failed:Already at the top level!");
+	}
+	else
+	{
+		int index = currentPath.lastIndexOf('/');
+		currentPath.remove(index, currentPath.size() - index);
+		qDebug() << "Effect:" << currentPath;
+		NetDrive::getInstance().setCurrentPath(currentPath);
+
+		clearEnteredDir();
+
+		onBtnRefreshClicked();
+	}
 }

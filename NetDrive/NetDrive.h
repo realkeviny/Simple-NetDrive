@@ -21,6 +21,7 @@ public:
 	QTcpSocket& getTcpSocket();
 	QString getLoginName() const;
 	QString getCurrentPath() const;
+	void setCurrentPath(QString newPath);
 
 public slots:
 	void showConnection();

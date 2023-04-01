@@ -312,3 +312,8 @@ QString NetDrive::getCurrentPath() const
 {
 	return currentPath;
 }
+
+void NetDrive::setCurrentPath(QString newPath)
+{
+	currentPath = newPath;
+}
