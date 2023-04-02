@@ -22,6 +22,12 @@
 #define CREATE_DIRECTORY_SUCCESS "Successfully Create Directory!"
 #define DELETE_DIRECTORY_SUCCESS "Successfully Deleted Directory!"
 #define DELETE_DIRECTORY_FAILURE "Failed to delete directory: not a directory"
+#define RENAMING_SUCCESS "Success"
+#define RENAMING_FAILURE "Failed"
+#define ENTERING_SUCCEESS
+#define ENTERING_FAILURE "Failed to enter directory: Not a directory"
+#define UPLOAD_SUCCESS "Uploaded!"
+#define UPLOAD_FAILURE "Failed to upload!"
 
 enum MSG_TYPE
 {
@@ -56,6 +62,8 @@ enum MSG_TYPE
 	RENAME_RESPOND,//重命名回复
 	ENTER_DIRECTORY_REQUEST,//进入文件夹请求
 	ENTER_DIRECTORY_RESPOND,//进入文件夹回应
+	UPLOAD_REQUEST,//上传请求
+	UPLOAD_RESPOND,//上传回复
 	MAX = 0x00ffffff
 };
 

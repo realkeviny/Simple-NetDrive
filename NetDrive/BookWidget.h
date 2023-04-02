@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include "Protocol.h"
+#include <QTimer>
 
 class BookWidget : public QWidget
 {
@@ -25,6 +26,8 @@ private slots:
 	void onBtnRenameClicked();
 	void onListDoubleClicked(const QModelIndex& index);
 	void onBtnReturnClicked();
+	void onBtnUploadFileClicked();
+	void uploadFileTime();
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;
@@ -38,4 +41,7 @@ private:
 	QPushButton* m_btnShare;
 
 	QString strEnteredDir;
+	QString strUploadFilePath;
+
+	QTimer* timer;
 };

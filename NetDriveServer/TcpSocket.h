@@ -5,7 +5,7 @@
 #include "Protocol.h"
 #include "DatabaseOperation.h"
 #include <QDir>
-
+#include <QFile>
 
 class TcpSocket :
 	public QTcpSocket
@@ -25,6 +25,11 @@ private slots:
 
 private:
 	QString strName;
+
+	QFile m_file;
+	qint64 m_totalsize;
+	qint64 m_receivedsize;
+	bool m_uploadstatus;
 };
 
 #endif

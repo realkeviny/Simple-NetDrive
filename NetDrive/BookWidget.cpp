@@ -2,11 +2,14 @@
 #include "NetDrive.h"
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QFileDialog>
 
 BookWidget::BookWidget(QWidget* parent)
 	: QWidget(parent)
 {
 	strEnteredDir.clear();
+
+	timer = new QTimer;
 
 	m_BookList = new QListWidget;
 	m_btnReturn = new QPushButton("Back");
@@ -46,6 +49,8 @@ BookWidget::BookWidget(QWidget* parent)
 	connect(m_btnRename, SIGNAL(clicked()), this, SLOT(onBtnRenameClicked()));
 	connect(m_BookList, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onListDoubleClicked(QModelIndex)));
 	connect(m_btnReturn, SIGNAL(clicked()), this, SLOT(onBtnReturnClicked()));
+	connect(m_btnUploadFile, SIGNAL(clicked()), this, SLOT(onBtnUploadFileClicked()));
+	connect(timer, SIGNAL(timeout()), this, SLOT(uploadFileTime()));
 }
 
 BookWidget::~BookWidget()
@@ -225,4 +230,70 @@ void BookWidget::onBtnReturnClicked()
 
 		onBtnRefreshClicked();
 	}
+}
+
+void BookWidget::onBtnUploadFileClicked()
+{
+	strUploadFilePath = QFileDialog::getOpenFileName();
+	qDebug() << strUploadFilePath;
+	if (!strUploadFilePath.isEmpty())
+	{
+		//aa/bb/cc -> cc
+		int index = strUploadFilePath.lastIndexOf('/');
+		QString strFileName = strUploadFilePath.right(strUploadFilePath.size() - index - 1);
+		qDebug() << strFileName;
+
+		QFile file(strUploadFilePath);
+		qint64 fileSize = file.size();//文件大小
+
+		QString currentPath = NetDrive::getInstance().getCurrentPath();
+		PDU* pdu = makePDU(currentPath.size() + 1);
+		pdu->MsgType = UPLOAD_REQUEST;
+		memcpy(pdu->Msg, currentPath.toStdString().c_str(), currentPath.size());
+		sprintf(pdu->Data, "%s %lld", strFileName.toStdString().c_str(), fileSize);
+
+		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+		free(pdu);
+		pdu = nullptr;
+
+		timer->start(1500);
+	}
+	else
+	{
+		QMessageBox::warning(this, "Uploading", "File Required");
+	}
+}
+
+void BookWidget::uploadFileTime()
+{
+	timer->stop();
+	QFile file(strUploadFilePath);
+	if (!file.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::warning(this, "Uploading", "Unable to open file");
+		return;
+	}
+
+	char* pBuffer = new char[4096];
+	qint64 ret = 0;
+	while (true)
+	{
+		ret = file.read(pBuffer, 4096);
+		if (ret > 0 && ret <= 4096)
+		{
+			NetDrive::getInstance().getTcpSocket().write(pBuffer, ret);
+		}
+		else if (0 == ret)
+		{
+			break;
+		}
+		else
+		{
+			QMessageBox::warning(this, "Uploading", "Failed to upload:Unable to read!");
+			break;
+		}
+	}
+	file.close();
+	delete[] pBuffer;
+	pBuffer = nullptr;
 }

@@ -285,6 +285,11 @@ void NetDrive::receiveMessage()
 		QMessageBox::information(this, "Entering Directory", pdu->Data);
 		break;
 	}
+	case UPLOAD_RESPOND:
+	{
+		QMessageBox::information(this, "Uploading", pdu->Data);
+		break;
+	}
 	default:
 		break;
 	}
