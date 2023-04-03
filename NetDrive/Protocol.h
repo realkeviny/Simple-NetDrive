@@ -28,6 +28,8 @@
 #define ENTERING_FAILURE "Failed to enter directory: Not a directory"
 #define UPLOAD_SUCCESS "Uploaded!"
 #define UPLOAD_FAILURE "Failed to upload!"
+#define DELETE_FILE_SUCCESS "Successfully Deleted File!"
+#define DELETE_FILE_FAILURE "Failed to delete file: not a file"
 
 enum MSG_TYPE
 {
@@ -64,6 +66,8 @@ enum MSG_TYPE
 	ENTER_DIRECTORY_RESPOND,//进入文件夹回应
 	UPLOAD_REQUEST,//上传请求
 	UPLOAD_RESPOND,//上传回复
+	DELETE_FILE_REQUEST,//文件删除请求
+	DELETE_FILE_RESPOND,//文件删除回应
 	MAX = 0x00ffffff
 };
 

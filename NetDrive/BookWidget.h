@@ -28,6 +28,7 @@ private slots:
 	void onBtnReturnClicked();
 	void onBtnUploadFileClicked();
 	void uploadFileTime();
+	void onBtnDeleteFileClicked();
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;

@@ -290,6 +290,11 @@ void NetDrive::receiveMessage()
 		QMessageBox::information(this, "Uploading", pdu->Data);
 		break;
 	}
+	case DELETE_FILE_RESPOND:
+	{
+		QMessageBox::information(this, "File Deletion", pdu->Data);
+		break;
+	}
 	default:
 		break;
 	}

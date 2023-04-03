@@ -51,6 +51,7 @@ BookWidget::BookWidget(QWidget* parent)
 	connect(m_btnReturn, SIGNAL(clicked()), this, SLOT(onBtnReturnClicked()));
 	connect(m_btnUploadFile, SIGNAL(clicked()), this, SLOT(onBtnUploadFileClicked()));
 	connect(timer, SIGNAL(timeout()), this, SLOT(uploadFileTime()));
+	connect(m_btnDeleteFile, SIGNAL(clicked()), this, SLOT(onBtnDeleteFileClicked()));
 }
 
 BookWidget::~BookWidget()
@@ -296,4 +297,25 @@ void BookWidget::uploadFileTime()
 	file.close();
 	delete[] pBuffer;
 	pBuffer = nullptr;
+}
+
+void BookWidget::onBtnDeleteFileClicked()
+{
+	QString currentPath = NetDrive::getInstance().getCurrentPath();
+	QListWidgetItem* item = m_BookList->currentItem();
+	if (nullptr == item)
+	{
+		QMessageBox::warning(this, "Delete File", "Please choose a file to remove!");
+	}
+	else
+	{
+		QString strDelName = item->text();
+		PDU* pdu = makePDU(currentPath.size() + 1);
+		pdu->MsgType = DELETE_FILE_REQUEST;
+		strncpy(pdu->Data, strDelName.toStdString().c_str(), strDelName.size());
+		memcpy(pdu->Msg, currentPath.toStdString().c_str(), currentPath.size());
+		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+		free(pdu);
+		pdu = nullptr;
+	}
 }

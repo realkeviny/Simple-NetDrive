@@ -455,6 +455,45 @@ void TcpSocket::receiveMessage()
 
 			break;
 		}
+		case DELETE_FILE_REQUEST:
+		{
+			char fileName[64] = { '\0' };
+			strcpy(fileName, pdu->Data);
+			char* path = new char[pdu->MsgLen];
+			memcpy(path, pdu->Msg, pdu->MsgLen);
+			QString fullPath = QString("%1/%2").arg(path).arg(fileName);
+
+			QFileInfo fileInfo(fullPath);
+			bool ret = false;
+			if (fileInfo.isDir())
+			{
+				ret = false;
+			}
+			else if (fileInfo.isFile())//常规文件
+			{
+				QDir dir;
+				ret = dir.remove(fullPath);
+			}
+
+			PDU* responsePDU = nullptr;
+			if (ret)
+			{
+				responsePDU = makePDU(strlen(DELETE_FILE_SUCCESS) + 1);
+				responsePDU->MsgType = DELETE_FILE_RESPOND;
+				memcpy(responsePDU->Data, DELETE_FILE_SUCCESS, strlen(DELETE_FILE_SUCCESS));
+			}
+			else
+			{
+				responsePDU = makePDU(strlen(DELETE_FILE_FAILURE) + 1);
+				responsePDU->MsgType = DELETE_FILE_RESPOND;
+				memcpy(responsePDU->Data, DELETE_FILE_FAILURE, strlen(DELETE_FILE_FAILURE));
+			}
+
+			write((char*)responsePDU, responsePDU->PDULen);
+			free(responsePDU);
+			responsePDU = nullptr;
+			break;
+		}
 		}
 
 		free(pdu);
