@@ -9,6 +9,7 @@ BookWidget::BookWidget(QWidget* parent)
 {
 	strEnteredDir.clear();
 
+	m_bDownload = false;
 	timer = new QTimer;
 
 	m_BookList = new QListWidget;
@@ -51,6 +52,7 @@ BookWidget::BookWidget(QWidget* parent)
 	connect(m_btnReturn, SIGNAL(clicked()), this, SLOT(onBtnReturnClicked()));
 	connect(m_btnUploadFile, SIGNAL(clicked()), this, SLOT(onBtnUploadFileClicked()));
 	connect(timer, SIGNAL(timeout()), this, SLOT(uploadFileTime()));
+	connect(m_btnDownloadFile, SIGNAL(clicked()), this, SLOT(onBtnDownloadFileClicked()));
 	connect(m_btnDeleteFile, SIGNAL(clicked()), this, SLOT(onBtnDeleteFileClicked()));
 }
 
@@ -102,6 +104,21 @@ void BookWidget::clearEnteredDir()
 QString BookWidget::enteredDir()
 {
 	return strEnteredDir;
+}
+
+void BookWidget::setDownloadStatus(bool status)
+{
+	m_bDownload = status;
+}
+
+bool BookWidget::getDownloadStatus() const
+{
+	return m_bDownload;
+}
+
+QString BookWidget::getSaveFilePath() const
+{
+	return m_strSaveFilePath;
 }
 
 void BookWidget::onbtnCreateFolderClicked()
@@ -317,5 +334,34 @@ void BookWidget::onBtnDeleteFileClicked()
 		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
 		free(pdu);
 		pdu = nullptr;
+	}
+}
+
+void BookWidget::onBtnDownloadFileClicked()
+{
+	QListWidgetItem* pItem = m_BookList->currentItem();
+	QString strSaveFilePath = QFileDialog::getSaveFileName();
+	if (strSaveFilePath.isEmpty())
+	{
+		QMessageBox::warning(this, "Download", "Please choose save path!");
+		m_strSaveFilePath.clear();
+	}
+	else
+	{
+		m_strSaveFilePath = strSaveFilePath;
+	}
+	if (nullptr == pItem)
+	{
+		QMessageBox::warning(this, "Download", "Please choose a file to download!");
+	}
+	else
+	{
+		QString strCurPath = NetDrive::getInstance().getCurrentPath();
+		PDU* pdu = makePDU(strCurPath.size() + 1);
+		pdu->MsgType = DOWNLOAD_REQUEST;
+		QString strFileName = pItem->text();
+		strcpy(pdu->Data, strFileName.toStdString().c_str());
+		memcpy(pdu->Msg, strCurPath.toStdString().c_str(), strCurPath.size());
+		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
 	}
 }

@@ -42,4 +42,5 @@ private:
 	QString strNameLogin;
 
 	QString currentPath;
+	QFile m_file;
 };

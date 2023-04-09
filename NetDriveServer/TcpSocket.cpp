@@ -9,6 +9,8 @@ TcpSocket::TcpSocket()
 	connect(this, SIGNAL(disconnected()), this, SLOT(clientOffline()));
 
 	m_uploadstatus = false;
+	m_pTimer = new QTimer;
+	connect(m_pTimer, SIGNAL(timeout()), this, SLOT(sendFileToClient()));
 }
 
 void TcpSocket::receiveMessage()
@@ -494,6 +496,39 @@ void TcpSocket::receiveMessage()
 			responsePDU = nullptr;
 			break;
 		}
+		case DOWNLOAD_REQUEST:
+		{
+			char fileName[64] = { '\0' };
+			strcpy(fileName, pdu->Data);
+			char* path = new char[pdu->MsgLen];
+			memcpy(path, pdu->Msg, pdu->MsgLen);
+			QString fullPath = QString("%1/%2").arg(path).arg(fileName);
+			qDebug() << fullPath;
+			delete[] path;
+			path = nullptr;
+
+			QFileInfo fileInfo(fullPath);
+			qint64 fileSize = fileInfo.size();
+			PDU* resPDU = makePDU(0);
+			resPDU->MsgType = DOWNLOAD_RESPOND;
+#ifdef Linux
+			sprintf(resPDU->Data, "%s %lld", fileName, fileSize);
+
+#else
+			sprintf(resPDU->Data, "%s %I64d", fileName, fileSize);
+#endif
+			write((char*)resPDU, resPDU->PDULen);
+			free(resPDU);
+			resPDU = nullptr;
+
+			m_file.setFileName(fullPath);
+			m_file.open(ReadOnly);
+			m_pTimer->start(1000);
+
+			break;
+		}
+		default:
+			break;
 		}
 
 		free(pdu);
@@ -535,6 +570,31 @@ void TcpSocket::clientOffline()
 {
 	DatabaseOperation::getInstance().handleOffline(strName.toStdString().c_str());
 	emit offline(this);
+}
+
+void TcpSocket::sendFileToClient()
+{
+	char* pData = new char[4096];
+	qint64 ret = 0;
+	while (1)
+	{
+		ret = m_file.read(pData, 4096);
+		if (ret > 0 && ret <= 4096)
+		{
+			write(pData, ret);
+		}
+		else if (0 == ret)
+		{
+			m_file.close();
+			break;
+		}
+		else if (ret < 0)
+		{
+			m_file.close();
+			qDebug() << "Error while sending";
+			break;
+		}
+	}
 }
 
 QString TcpSocket::getName() const

@@ -18,6 +18,12 @@ public:
 	void updateFileList(const PDU* pdu);
 	void clearEnteredDir();
 	QString enteredDir();
+	void setDownloadStatus(bool status);
+	bool getDownloadStatus() const;
+	QString getSaveFilePath() const;
+
+	qint64 m_iTotal;//总文件大小
+	qint64 m_iReceived;//已接收多少
 
 private slots:
 	void onbtnCreateFolderClicked();
@@ -29,6 +35,7 @@ private slots:
 	void onBtnUploadFileClicked();
 	void uploadFileTime();
 	void onBtnDeleteFileClicked();
+	void onBtnDownloadFileClicked();
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;
@@ -45,4 +52,6 @@ private:
 	QString strUploadFilePath;
 
 	QTimer* timer;
+	QString m_strSaveFilePath;
+	bool m_bDownload;
 };

@@ -6,6 +6,7 @@
 #include "DatabaseOperation.h"
 #include <QDir>
 #include <QFile>
+#include <QTimer>
 
 class TcpSocket :
 	public QTcpSocket
@@ -22,6 +23,7 @@ signals:
 private slots:
 	void receiveMessage();
 	void clientOffline();
+	void sendFileToClient();
 
 private:
 	QString strName;
@@ -30,6 +32,8 @@ private:
 	qint64 m_totalsize;
 	qint64 m_receivedsize;
 	bool m_uploadstatus;
+
+	QTimer* m_pTimer;
 };
 
 #endif

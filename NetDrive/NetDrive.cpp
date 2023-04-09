@@ -119,187 +119,234 @@ void NetDrive::onBtnLogoutClicked()
 
 void NetDrive::receiveMessage()
 {
-	qDebug() << tcpSocket.bytesAvailable();
-	uint PDULen = 0;
-	tcpSocket.read((char*)&PDULen, sizeof(uint));
-	uint MsgLen = PDULen - sizeof(PDU);
-	PDU* pdu = makePDU(MsgLen);
-	tcpSocket.read((char*)pdu + sizeof(uint), PDULen - sizeof(uint));
-	switch (pdu->MsgType)
+	if (!OperationWidget::getInstance().getBook()->getDownloadStatus())
 	{
-	case REGISTER_RESPOND:
-	{
-		if (0 == strcmp(pdu->Data, REGISTER_OK))
+		qDebug() << tcpSocket.bytesAvailable();
+		uint PDULen = 0;
+		tcpSocket.read((char*)&PDULen, sizeof(uint));
+		uint MsgLen = PDULen - sizeof(PDU);
+		PDU* pdu = makePDU(MsgLen);
+		tcpSocket.read((char*)pdu + sizeof(uint), PDULen - sizeof(uint));
+		switch (pdu->MsgType)
 		{
-			QMessageBox::information(this, "Information", REGISTER_OK);
-		}
-		else
+		case REGISTER_RESPOND:
 		{
-			QMessageBox::warning(this, "Register", REGISTER_FAILURE);
+			if (0 == strcmp(pdu->Data, REGISTER_OK))
+			{
+				QMessageBox::information(this, "Information", REGISTER_OK);
+			}
+			else
+			{
+				QMessageBox::warning(this, "Register", REGISTER_FAILURE);
+			}
+			break;
 		}
-		break;
-	}
-	case LOGIN_RESPOND:
-	{
-		if (0 == strcmp(pdu->Data, LOGIN_OK))
+		case LOGIN_RESPOND:
 		{
-			currentPath = QString("D:/UserFiles/%1").arg(strNameLogin);
-			QMessageBox::information(this, "Information", LOGIN_OK);
-			OperationWidget::getInstance().show();
-			hide();
+			if (0 == strcmp(pdu->Data, LOGIN_OK))
+			{
+				currentPath = QString("D:/UserFiles/%1").arg(strNameLogin);
+				QMessageBox::information(this, "Information", LOGIN_OK);
+				OperationWidget::getInstance().show();
+				hide();
+			}
+			else
+			{
+				QMessageBox::warning(this, "Login", LOGIN_FAILURE);
+			}
+			break;
 		}
-		else
+		case ONLINE_RESPOND:
 		{
-			QMessageBox::warning(this, "Login", LOGIN_FAILURE);
-		}
-		break;
-	}
-	case ONLINE_RESPOND:
-	{
-		OperationWidget::getInstance().getFriendList()->showOnlineUsers(pdu);
+			OperationWidget::getInstance().getFriendList()->showOnlineUsers(pdu);
 
-		break;
-	}
-	case SEARCH_RESPOND:
-	{
-		if (strcmp(SEARCH_USER_INEXIST, pdu->Data) == 0)
-		{
-			QMessageBox::information(this, "Search", QString("%1:User doesn't exist!").arg(OperationWidget::getInstance().getFriendList()->strSearchResult));
+			break;
 		}
-		else if (strcmp(SEARCH_USER_EXIST_ONLINE, pdu->Data) == 0)
+		case SEARCH_RESPOND:
 		{
-			QMessageBox::information(this, "Search", QString("%1:User exists and online!").arg(OperationWidget::getInstance().getFriendList()->strSearchResult));
+			if (strcmp(SEARCH_USER_INEXIST, pdu->Data) == 0)
+			{
+				QMessageBox::information(this, "Search", QString("%1:User doesn't exist!").arg(OperationWidget::getInstance().getFriendList()->strSearchResult));
+			}
+			else if (strcmp(SEARCH_USER_EXIST_ONLINE, pdu->Data) == 0)
+			{
+				QMessageBox::information(this, "Search", QString("%1:User exists and online!").arg(OperationWidget::getInstance().getFriendList()->strSearchResult));
+			}
+			else if (strcmp(SEARCH_USER_EXIST_OFFLINE, pdu->Data) == 0)
+			{
+				QMessageBox::information(this, "Search", QString("%1:User exists but offline!").arg(OperationWidget::getInstance().getFriendList()->strSearchResult));
+			}
+			break;
 		}
-		else if (strcmp(SEARCH_USER_EXIST_OFFLINE, pdu->Data) == 0)
+		case ADD_REQUEST:
 		{
-			QMessageBox::information(this, "Search", QString("%1:User exists but offline!").arg(OperationWidget::getInstance().getFriendList()->strSearchResult));
-		}
-		break;
-	}
-	case ADD_REQUEST:
-	{
-		char friendName[64] = { '\0' };
+			char friendName[64] = { '\0' };
 
-		strncpy(friendName, pdu->Data + 64, 64);
-		int ret = QMessageBox::information(this, "Friend Adding", QString("%1 wants to add you as friend.").arg(friendName), QMessageBox::Yes, QMessageBox::No);
+			strncpy(friendName, pdu->Data + 64, 64);
+			int ret = QMessageBox::information(this, "Friend Adding", QString("%1 wants to add you as friend.").arg(friendName), QMessageBox::Yes, QMessageBox::No);
 
-		PDU* responsePDU = makePDU(0);
-		memcpy(responsePDU->Data, pdu->Data, 128);
-		if (ret == QMessageBox::Yes)
-		{
-			responsePDU->MsgType = ADD_AGREEMENT;
+			PDU* responsePDU = makePDU(0);
+			memcpy(responsePDU->Data, pdu->Data, 128);
+			if (ret == QMessageBox::Yes)
+			{
+				responsePDU->MsgType = ADD_AGREEMENT;
+			}
+			else
+			{
+				responsePDU->MsgType = ADD_REFUSE;
+			}
+			tcpSocket.write(reinterpret_cast<char*>(responsePDU), responsePDU->PDULen);
+			free(responsePDU);
+			responsePDU = nullptr;
+			break;
 		}
-		else
+		case ADD_RESPOND:
 		{
-			responsePDU->MsgType = ADD_REFUSE;
+			QMessageBox::information(this, "Friend Adding", pdu->Data);
 		}
-		tcpSocket.write(reinterpret_cast<char*>(responsePDU), responsePDU->PDULen);
-		free(responsePDU);
-		responsePDU = nullptr;
-		break;
-	}
-	case ADD_RESPOND:
-	{
-		QMessageBox::information(this, "Friend Adding", pdu->Data);
-	}
-	case ADD_AGREEMENT:
-	{
-		char friendName[64] = { '\0' };
-		memcpy(friendName, pdu->Data, 64);
-		QMessageBox::information(this, "Success", QString("%1 is your friend now").arg(friendName));
-		break;
-	}
-	case ADD_REFUSE:
-	{
-		char friendName[64] = { '\0' };
-		memcpy(friendName, pdu->Data, 64);
-		QMessageBox::information(this, "Failure", QString("%1 refused to be your friend ").arg(friendName));
-		break;
-	}
+		case ADD_AGREEMENT:
+		{
+			char friendName[64] = { '\0' };
+			memcpy(friendName, pdu->Data, 64);
+			QMessageBox::information(this, "Success", QString("%1 is your friend now").arg(friendName));
+			break;
+		}
+		case ADD_REFUSE:
+		{
+			char friendName[64] = { '\0' };
+			memcpy(friendName, pdu->Data, 64);
+			QMessageBox::information(this, "Failure", QString("%1 refused to be your friend ").arg(friendName));
+			break;
+		}
 
-	case FRIENDLIST_REFRESH_RESPOND:
-	{
-		OperationWidget::getInstance().getFriendList()->updateFriendList(pdu);
-		break;
-	}
+		case FRIENDLIST_REFRESH_RESPOND:
+		{
+			OperationWidget::getInstance().getFriendList()->updateFriendList(pdu);
+			break;
+		}
 
-	case FRIEND_DELETE_REQUEST:
-	{
-		char name[64] = { '\0' };
-		memcpy(name, pdu->Data, 64);
-		QMessageBox::information(this, "Friend Deleting", QString("%1 deleted the friendship with you!").arg(name));
-		break;
-	}
-	case FRIEND_DELETE_RESPOND:
-	{
-		QMessageBox::information(this, "Friend Deleting", "Success");
-		break;
-	}
-	case CHAT_REQUEST:
-	{
-		if (Chatting::getInstance().isHidden())
+		case FRIEND_DELETE_REQUEST:
 		{
-			Chatting::getInstance().show();
+			char name[64] = { '\0' };
+			memcpy(name, pdu->Data, 64);
+			QMessageBox::information(this, "Friend Deleting", QString("%1 deleted the friendship with you!").arg(name));
+			break;
 		}
-		char Sender[64] = { '\0' };
-		memcpy(Sender, pdu->Data, 64);
-		QString strSender = Sender;
-		Chatting::getInstance().setChatUser(strSender);
-		Chatting::getInstance().updateMessage(pdu);
-		break;
-	}
-	case GROUP_CHAT_REQUEST:
-	{
-		OperationWidget::getInstance().getFriendList()->updateGroupMessage(pdu);
-		break;
-	}
-	case CREATE_DIRECTORY_RESPOND:
-	{
-		QMessageBox::information(this, "Directory Creating", pdu->Data);
-		break;
-	}
-	case REFRESH_RESPOND:
-	{
-		OperationWidget::getInstance().getBook()->updateFileList(pdu);
-		QString enteredDir = OperationWidget::getInstance().getBook()->enteredDir();
-		if (!enteredDir.isEmpty())
+		case FRIEND_DELETE_RESPOND:
 		{
-			currentPath = currentPath + "/" + enteredDir;
-			qDebug() << "Entering:" << currentPath;
+			QMessageBox::information(this, "Friend Deleting", "Success");
+			break;
 		}
-		break;
+		case CHAT_REQUEST:
+		{
+			if (Chatting::getInstance().isHidden())
+			{
+				Chatting::getInstance().show();
+			}
+			char Sender[64] = { '\0' };
+			memcpy(Sender, pdu->Data, 64);
+			QString strSender = Sender;
+			Chatting::getInstance().setChatUser(strSender);
+			Chatting::getInstance().updateMessage(pdu);
+			break;
+		}
+		case GROUP_CHAT_REQUEST:
+		{
+			OperationWidget::getInstance().getFriendList()->updateGroupMessage(pdu);
+			break;
+		}
+		case CREATE_DIRECTORY_RESPOND:
+		{
+			QMessageBox::information(this, "Directory Creating", pdu->Data);
+			break;
+		}
+		case REFRESH_RESPOND:
+		{
+			OperationWidget::getInstance().getBook()->updateFileList(pdu);
+			QString enteredDir = OperationWidget::getInstance().getBook()->enteredDir();
+			if (!enteredDir.isEmpty())
+			{
+				currentPath = currentPath + "/" + enteredDir;
+				qDebug() << "Entering:" << currentPath;
+			}
+			break;
+		}
+		case DELETE_DIRECTORY_RESPOND:
+		{
+			QMessageBox::information(this, "Directory Removing", pdu->Data);
+			break;
+		}
+		case RENAME_RESPOND:
+		{
+			QMessageBox::information(this, "Renaming", pdu->Data);
+			break;
+		}
+		case ENTER_DIRECTORY_RESPOND:
+		{
+			OperationWidget::getInstance().getBook()->clearEnteredDir();
+			QMessageBox::information(this, "Entering Directory", pdu->Data);
+			break;
+		}
+		case UPLOAD_RESPOND:
+		{
+			QMessageBox::information(this, "Uploading", pdu->Data);
+			break;
+		}
+		case DOWNLOAD_RESPOND:
+		{
+			qDebug() << pdu->Data;
+			char fileName[64] = { '\0' };
+#ifdef Linux
+			sscanf(pdu->Data, "%s %lld", fileName, &(OperationWidget::getInstance().getBook()->m_iTotal));
+
+#else
+			sscanf(pdu->Data, "%s %I64d", fileName, &(OperationWidget::getInstance().getBook()->m_iTotal));
+#endif
+			if (strlen(fileName) > 0 && OperationWidget::getInstance().getBook()->m_iTotal > 0)
+			{
+				OperationWidget::getInstance().getBook()->setDownloadStatus(true);
+				m_file.setFileName(OperationWidget::getInstance().getBook()->getSaveFilePath());
+				if (!m_file.open(QIODevice::WriteOnly))
+				{
+					QMessageBox::warning(this, "Download", "Unable to get save path!");
+				}
+			}
+			break;
+		}
+		case DELETE_FILE_RESPOND:
+		{
+			QMessageBox::information(this, "File Deletion", pdu->Data);
+			break;
+		}
+		default:
+			break;
+		}
+		free(pdu);
+		pdu = nullptr;
 	}
-	case DELETE_DIRECTORY_RESPOND:
+	else
 	{
-		QMessageBox::information(this, "Directory Removing", pdu->Data);
-		break;
+		QByteArray buffer = tcpSocket.readAll();
+		m_file.write(buffer);
+		BookWidget* pBook = OperationWidget::getInstance().getBook();
+		pBook->m_iReceived += buffer.size();
+		if (pBook->m_iTotal == pBook->m_iReceived)
+		{
+			m_file.close();
+			pBook->m_iTotal = 0;
+			pBook->m_iReceived = 0;
+			pBook->setDownloadStatus(false);
+			QMessageBox::information(this, "Download", "Success");
+		}
+		else if (pBook->m_iTotal < pBook->m_iReceived)
+		{
+			m_file.close();
+			pBook->m_iTotal = 0;
+			pBook->m_iReceived = 0;
+			pBook->setDownloadStatus(false);
+			QMessageBox::critical(this, "Download", "Failed to download!");
+		}
 	}
-	case RENAME_RESPOND:
-	{
-		QMessageBox::information(this, "Renaming", pdu->Data);
-		break;
-	}
-	case ENTER_DIRECTORY_RESPOND:
-	{
-		OperationWidget::getInstance().getBook()->clearEnteredDir();
-		QMessageBox::information(this, "Entering Directory", pdu->Data);
-		break;
-	}
-	case UPLOAD_RESPOND:
-	{
-		QMessageBox::information(this, "Uploading", pdu->Data);
-		break;
-	}
-	case DELETE_FILE_RESPOND:
-	{
-		QMessageBox::information(this, "File Deletion", pdu->Data);
-		break;
-	}
-	default:
-		break;
-	}
-	free(pdu);
-	pdu = nullptr;
 }
 
 NetDrive& NetDrive::getInstance()
