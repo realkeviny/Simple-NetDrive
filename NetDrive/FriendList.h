@@ -22,6 +22,8 @@ public:
 
 	QString strSearchResult;
 
+	QListWidget* getFriendList();
+
 private slots:
 	void onBtnShowOnlineUsersClicked();
 	void onBtnSearchClicked();

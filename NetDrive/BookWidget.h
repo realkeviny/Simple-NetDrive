@@ -13,7 +13,7 @@ class BookWidget : public QWidget
 	Q_OBJECT
 
 public:
-	explicit BookWidget(QWidget* parent = 0);
+	explicit BookWidget(QWidget* parent = nullptr);
 	~BookWidget();
 	void updateFileList(const PDU* pdu);
 	void clearEnteredDir();
@@ -36,6 +36,7 @@ private slots:
 	void uploadFileTime();
 	void onBtnDeleteFileClicked();
 	void onBtnDownloadFileClicked();
+	void onBtnShareClicked();
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;

@@ -576,7 +576,7 @@ void TcpSocket::sendFileToClient()
 {
 	char* pData = new char[4096];
 	qint64 ret = 0;
-	while (1)
+	while (true)
 	{
 		ret = m_file.read(pData, 4096);
 		if (ret > 0 && ret <= 4096)
@@ -590,8 +590,8 @@ void TcpSocket::sendFileToClient()
 		}
 		else if (ret < 0)
 		{
-			m_file.close();
 			qDebug() << "Error while sending";
+			m_file.close();
 			break;
 		}
 	}

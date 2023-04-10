@@ -3,6 +3,8 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QFileDialog>
+#include "OperationWidget.h"
+#include "ShareFile.h"
 
 BookWidget::BookWidget(QWidget* parent)
 	: QWidget(parent)
@@ -54,6 +56,7 @@ BookWidget::BookWidget(QWidget* parent)
 	connect(timer, SIGNAL(timeout()), this, SLOT(uploadFileTime()));
 	connect(m_btnDownloadFile, SIGNAL(clicked()), this, SLOT(onBtnDownloadFileClicked()));
 	connect(m_btnDeleteFile, SIGNAL(clicked()), this, SLOT(onBtnDeleteFileClicked()));
+	connect(m_btnShare, SIGNAL(clicked()), this, SLOT(onBtnShareClicked()));
 }
 
 BookWidget::~BookWidget()
@@ -340,22 +343,22 @@ void BookWidget::onBtnDeleteFileClicked()
 void BookWidget::onBtnDownloadFileClicked()
 {
 	QListWidgetItem* pItem = m_BookList->currentItem();
-	QString strSaveFilePath = QFileDialog::getSaveFileName();
-	if (strSaveFilePath.isEmpty())
-	{
-		QMessageBox::warning(this, "Download", "Please choose save path!");
-		m_strSaveFilePath.clear();
-	}
-	else
-	{
-		m_strSaveFilePath = strSaveFilePath;
-	}
 	if (nullptr == pItem)
 	{
 		QMessageBox::warning(this, "Download", "Please choose a file to download!");
 	}
 	else
 	{
+		QString strSaveFilePath = QFileDialog::getSaveFileName();
+		if (strSaveFilePath.isEmpty())
+		{
+			QMessageBox::warning(this, "Download", "Please choose save path!");
+			m_strSaveFilePath.clear();
+		}
+		else
+		{
+			m_strSaveFilePath = strSaveFilePath;
+		}
 		QString strCurPath = NetDrive::getInstance().getCurrentPath();
 		PDU* pdu = makePDU(strCurPath.size() + 1);
 		pdu->MsgType = DOWNLOAD_REQUEST;
@@ -363,5 +366,16 @@ void BookWidget::onBtnDownloadFileClicked()
 		strcpy(pdu->Data, strFileName.toStdString().c_str());
 		memcpy(pdu->Msg, strCurPath.toStdString().c_str(), strCurPath.size());
 		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+	}
+}
+
+void BookWidget::onBtnShareClicked()
+{
+	FriendList* pFList = OperationWidget::getInstance().getFriendList();
+	QListWidget* friendList = pFList->getFriendList();
+	ShareFile::getInstance().updateFriend(friendList);
+	if (ShareFile::getInstance().isHidden())
+	{
+		ShareFile::getInstance().show();
 	}
 }

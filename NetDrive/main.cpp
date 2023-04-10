@@ -1,5 +1,6 @@
 #include "NetDrive.h"
 #include <QtWidgets/QApplication>
+#include "ShareFile.h"
 
 int main(int argc, char* argv[])
 {
@@ -8,5 +9,7 @@ int main(int argc, char* argv[])
 	//w.show();
 
 	NetDrive::getInstance().show();
+	//ShareFile sf;
+	//sf.show();
 	return a.exec();
 }

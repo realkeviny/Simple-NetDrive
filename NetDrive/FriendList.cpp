@@ -58,6 +58,11 @@ FriendList::~FriendList()
 {
 }
 
+QListWidget* FriendList::getFriendList()
+{
+	return friendsList;
+}
+
 void FriendList::onBtnShowOnlineUsersClicked()
 {
 	if (onlineu->isHidden())
