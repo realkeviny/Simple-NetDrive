@@ -114,14 +114,19 @@ void BookWidget::setDownloadStatus(bool status)
 	m_bDownload = status;
 }
 
-bool BookWidget::getDownloadStatus() const
+bool BookWidget::getDownloadStatus()
 {
 	return m_bDownload;
 }
 
-QString BookWidget::getSaveFilePath() const
+QString BookWidget::getSaveFilePath()
 {
 	return m_strSaveFilePath;
+}
+
+QString BookWidget::getShareFileName()
+{
+	return m_strShareFileName;
 }
 
 void BookWidget::onbtnCreateFolderClicked()
@@ -366,11 +371,24 @@ void BookWidget::onBtnDownloadFileClicked()
 		strcpy(pdu->Data, strFileName.toStdString().c_str());
 		memcpy(pdu->Msg, strCurPath.toStdString().c_str(), strCurPath.size());
 		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+		free(pdu);
+		pdu = nullptr;
 	}
 }
 
 void BookWidget::onBtnShareClicked()
 {
+	QListWidgetItem* pItem = m_BookList->currentItem();
+	if (nullptr == pItem)
+	{
+		QMessageBox::warning(this, "Share", "Please choose a file to share!");
+		return;
+	}
+	else
+	{
+		m_strShareFileName = pItem->text();
+	}
+
 	FriendList* pFList = OperationWidget::getInstance().getFriendList();
 	QListWidget* friendList = pFList->getFriendList();
 	ShareFile::getInstance().updateFriend(friendList);

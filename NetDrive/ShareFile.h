@@ -23,6 +23,11 @@ public:
 	~ShareFile();
 
 private slots:
+	void onBtnCancelSelectedClicked();
+	void onBtnSelectAllClicked();
+
+	void onBtnOKClicked();
+	void onBtnCancelClicked();
 
 private:
 	QPushButton* m_btnSelectAll;

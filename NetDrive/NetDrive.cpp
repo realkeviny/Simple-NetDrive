@@ -313,6 +313,33 @@ void NetDrive::receiveMessage()
 			}
 			break;
 		}
+		case SHARE_FILE_RESPOND:
+		{
+			QMessageBox::information(this, "Share", pdu->Data);
+			break;
+		}
+		case SHARE_FILE_NOTIFICATION:
+		{
+			char* path = new char[pdu->MsgLen];
+			memcpy(path, pdu->Msg, pdu->MsgLen);
+			char* pos = strrchr(path, '/');
+			if (nullptr != pos)
+			{
+				pos++;
+				QString strNotification = QString("%1 is sharing %2\n Accept?").arg(pdu->Data).arg(pos);
+				int ret = QMessageBox::question(this, "Share", strNotification);
+				if (QMessageBox::Yes == ret)
+				{
+					PDU* response = makePDU(pdu->MsgLen);
+					response->MsgType = SHARE_FILE_NOTIFICATION_RESPOND;
+					memcpy(response->Data, pdu->Msg, pdu->MsgLen);
+					QString name = NetDrive::getInstance().getLoginName();
+					strcpy(response->Data, name.toStdString().c_str());
+					tcpSocket.write((char*)response, response->PDULen);
+				}
+			}
+			break;
+		}
 		case DELETE_FILE_RESPOND:
 		{
 			QMessageBox::information(this, "File Deletion", pdu->Data);

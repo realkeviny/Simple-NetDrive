@@ -10,6 +10,7 @@ int main(int argc, char* argv[])
 
 	NetDrive::getInstance().show();
 	//ShareFile sf;
+	//sf.test();
 	//sf.show();
 	return a.exec();
 }

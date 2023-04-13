@@ -1,4 +1,6 @@
 #include "ShareFile.h"
+#include "NetDrive.h"
+#include "OperationWidget.h"
 
 ShareFile::ShareFile(QWidget* parent)
 	: QWidget(parent)
@@ -29,6 +31,11 @@ ShareFile::ShareFile(QWidget* parent)
 	mainLayout->addWidget(m_sa);
 	mainLayout->addLayout(bottomLayout);
 	setLayout(mainLayout);
+
+	connect(m_btnCancelSelected, SIGNAL(clicked()), this, SLOT(onBtnCancelSelectedClicked()));
+	connect(m_btnSelectAll, SIGNAL(clicked()), this, SLOT(onBtnSelectAllClicked()));
+	connect(m_btnOK, SIGNAL(clicked()), this, SLOT(onBtnOKClicked()));
+	connect(m_btnCancel, SIGNAL(clicked()), this, SLOT(onBtnCancelClicked()));
 }
 
 ShareFile& ShareFile::getInstance()
@@ -79,3 +86,70 @@ void ShareFile::updateFriend(QListWidget* fList)
 
 ShareFile::~ShareFile()
 {}
+
+void ShareFile::onBtnCancelSelectedClicked()
+{
+	QList<QAbstractButton*> checkBoxes = m_btnGroup->buttons();
+	for (int i = 0; i < checkBoxes.size(); ++i)
+	{
+		if (checkBoxes[i]->isChecked())
+		{
+			checkBoxes[i]->setChecked(false);
+		}
+	}
+}
+
+void ShareFile::onBtnSelectAllClicked()
+{
+	QList<QAbstractButton*> checkBoxes = m_btnGroup->buttons();
+	for (int i = 0; i < checkBoxes.size(); ++i)
+	{
+		if (!checkBoxes[i]->isChecked())
+		{
+			checkBoxes[i]->setChecked(true);
+		}
+	}
+}
+
+void ShareFile::onBtnOKClicked()
+{
+	QString strName = NetDrive::getInstance().getLoginName();
+	QString strCurPath = NetDrive::getInstance().getCurrentPath();
+	QString strShareFileName = OperationWidget::getInstance().getBook()->getShareFileName();
+
+	QString strPath = strCurPath + "/" + strShareFileName;
+
+	QList<QAbstractButton*> checkBoxes = m_btnGroup->buttons();
+	int num = 0;
+	for (int i = 0; i < checkBoxes.size(); ++i)
+	{
+		if (checkBoxes[i]->isChecked())
+		{
+			num++;
+		}
+	}
+
+	PDU* pdu = makePDU(64 * num + strPath.size() + 1);
+	pdu->MsgType = SHARE_FILE_REQUEST;
+	sprintf(pdu->Data, "%s %d", strName.toStdString().c_str(), num);
+	int j = 0;
+	for (int i = 0; i < checkBoxes.size(); ++i)
+	{
+		if (checkBoxes[i]->isChecked())
+		{
+			//memcpy((char*)(pdu->Msg) + j * 64, checkBoxes[i]->text(), 64);
+			j++;
+		}
+	}
+
+	memcpy((char*)(pdu->Msg) + num * 64, strPath.toStdString().c_str(), strPath.size());
+
+	NetDrive::getInstance().getTcpSocket().write((char*)pdu, pdu->PDULen);
+
+	free(pdu);
+	pdu = nullptr;
+}
+
+void ShareFile::onBtnCancelClicked()
+{
+}

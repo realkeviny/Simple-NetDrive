@@ -19,8 +19,9 @@ public:
 	void clearEnteredDir();
 	QString enteredDir();
 	void setDownloadStatus(bool status);
-	bool getDownloadStatus() const;
-	QString getSaveFilePath() const;
+	bool getDownloadStatus();
+	QString getSaveFilePath();
+	QString getShareFileName();
 
 	qint64 m_iTotal;//总文件大小
 	qint64 m_iReceived;//已接收多少
@@ -55,4 +56,6 @@ private:
 	QTimer* timer;
 	QString m_strSaveFilePath;
 	bool m_bDownload;
+
+	QString m_strShareFileName;
 };

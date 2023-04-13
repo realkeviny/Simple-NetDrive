@@ -2,6 +2,7 @@
 #include <QDebug>
 #include "TcpServer.h"
 #include <QFileInfoList>
+#include <QMessageBox>
 
 TcpSocket::TcpSocket()
 {
@@ -527,6 +528,53 @@ void TcpSocket::receiveMessage()
 
 			break;
 		}
+
+		case SHARE_FILE_REQUEST:
+		{
+			char senderName[64] = { '\0' };
+			int numOfReceiver = 0;
+			sscanf(pdu->Data, "%s%d", senderName, &numOfReceiver);
+			int size = numOfReceiver * 64;
+			PDU* notification = makePDU(pdu->MsgLen - size);
+			notification->MsgType = SHARE_FILE_NOTIFICATION;
+			strcpy(notification->Data, senderName);
+			memcpy(notification->Msg, (char*)(pdu->Msg) + size, pdu->MsgLen - size);
+
+			char receiverNames[64] = { '\0' };
+			for (int i = 0; i < numOfReceiver; ++i)
+			{
+				memcpy(receiverNames, (char*)(pdu->Msg) + i * 64, 64);
+				TcpServer::getInstance().forward(receiverNames, notification);
+			}
+			free(notification);
+			notification = nullptr;
+
+			notification = makePDU(0);
+			notification->MsgType = SHARE_FILE_RESPOND;
+			strcpy(notification->Data, "Successfully shared!");
+			write((char*)notification, notification->PDULen);
+			free(notification);
+			notification = nullptr;
+			break;
+		}
+		case SHARE_FILE_NOTIFICATION_RESPOND:
+		{
+			QString caReceivePath = QString("D:/UserFiles/%1").arg(pdu->Data);
+			QString shareFilePath = QString("%1").arg((char*)(pdu->Msg));
+			int index = shareFilePath.lastIndexOf('/');
+			QString fileName = shareFilePath.right(shareFilePath.size() - index - 1);
+			caReceivePath = caReceivePath + '/' + fileName;
+
+			QFileInfo fileInfo(shareFilePath);
+			if (fileInfo.isFile())
+			{
+				QFile::copy(shareFilePath, caReceivePath);
+			}
+			else if (fileInfo.isDir())
+			{
+			}
+			break;
+		}
 		default:
 			break;
 		}
@@ -574,27 +622,26 @@ void TcpSocket::clientOffline()
 
 void TcpSocket::sendFileToClient()
 {
+	m_pTimer->stop();
 	char* pData = new char[4096];
 	qint64 ret = 0;
-	while (true)
-	{
+	while (true) {
 		ret = m_file.read(pData, 4096);
-		if (ret > 0 && ret <= 4096)
-		{
+		if (ret > 0 && ret <= 4096) {
 			write(pData, ret);
 		}
-		else if (0 == ret)
-		{
+		else if (0 == ret) {
 			m_file.close();
 			break;
 		}
-		else if (ret < 0)
-		{
-			qDebug() << "Error while sending";
+		else if (ret < 0) {
+			qDebug() << "发送文件给客户端失败!";
 			m_file.close();
 			break;
 		}
 	}
+	delete[]pData;
+	pData = 0;
 }
 
 QString TcpSocket::getName() const
