@@ -16,6 +16,7 @@ class TcpSocket :
 public:
 	TcpSocket();
 	QString getName() const;
+	void copyDirectory(QString strSrcDir, QString strDstDir);
 
 signals:
 	void offline(TcpSocket* sock);

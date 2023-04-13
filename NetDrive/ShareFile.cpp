@@ -137,7 +137,7 @@ void ShareFile::onBtnOKClicked()
 	{
 		if (checkBoxes[i]->isChecked())
 		{
-			//memcpy((char*)(pdu->Msg) + j * 64, checkBoxes[i]->text(), 64);
+			memcpy((char*)(pdu->Msg) + j * 64, checkBoxes[i]->text().toStdString().c_str(), checkBoxes[i]->text().size());
 			j++;
 		}
 	}
@@ -152,4 +152,5 @@ void ShareFile::onBtnOKClicked()
 
 void ShareFile::onBtnCancelClicked()
 {
+	hide();
 }

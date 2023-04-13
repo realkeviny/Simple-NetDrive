@@ -514,7 +514,6 @@ void TcpSocket::receiveMessage()
 			resPDU->MsgType = DOWNLOAD_RESPOND;
 #ifdef Linux
 			sprintf(resPDU->Data, "%s %lld", fileName, fileSize);
-
 #else
 			sprintf(resPDU->Data, "%s %I64d", fileName, fileSize);
 #endif
@@ -533,7 +532,7 @@ void TcpSocket::receiveMessage()
 		{
 			char senderName[64] = { '\0' };
 			int numOfReceiver = 0;
-			sscanf(pdu->Data, "%s%d", senderName, &numOfReceiver);
+			sscanf(pdu->Data, "%s %d", senderName, &numOfReceiver);
 			int size = numOfReceiver * 64;
 			PDU* notification = makePDU(pdu->MsgLen - size);
 			notification->MsgType = SHARE_FILE_NOTIFICATION;
@@ -572,6 +571,7 @@ void TcpSocket::receiveMessage()
 			}
 			else if (fileInfo.isDir())
 			{
+				copyDirectory(shareFilePath, caReceivePath);
 			}
 			break;
 		}
@@ -647,4 +647,43 @@ void TcpSocket::sendFileToClient()
 QString TcpSocket::getName() const
 {
 	return strName;
+}
+
+void TcpSocket::copyDirectory(QString strSrcDir, QString strDstDir)
+{
+	QDir dir;
+	dir.mkdir(strDstDir);
+
+	dir.setPath(strSrcDir);
+	QFileInfoList fileInfoList = dir.entryInfoList();
+	if (fileInfoList.isEmpty())
+	{
+		return;
+	}
+
+	QString srcTemp;
+	QString dstTemp;
+	for (int i = 0; i < fileInfoList.size(); ++i)
+	{
+		qDebug() << "File Name:" << fileInfoList[i].fileName();
+		srcTemp = strSrcDir + '/' + fileInfoList[i].fileName();
+		dstTemp = strDstDir + '/' + fileInfoList[i].fileName();
+		if (fileInfoList[i].isFile())
+		{
+			QFile::copy(srcTemp, dstTemp);
+		}
+		else if (fileInfoList[i].isDir())
+		{
+			if (QString(".") == fileInfoList[i].fileName() || QString("..") == fileInfoList[i].fileName())
+			{
+				continue;
+			}
+
+			copyDirectory(srcTemp, dstTemp);
+		}
+		else
+		{
+			return;
+		}
+	}
 }

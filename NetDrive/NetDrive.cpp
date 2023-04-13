@@ -332,7 +332,7 @@ void NetDrive::receiveMessage()
 				{
 					PDU* response = makePDU(pdu->MsgLen);
 					response->MsgType = SHARE_FILE_NOTIFICATION_RESPOND;
-					memcpy(response->Data, pdu->Msg, pdu->MsgLen);
+					memcpy(response->Msg, pdu->Msg, pdu->MsgLen);
 					QString name = NetDrive::getInstance().getLoginName();
 					strcpy(response->Data, name.toStdString().c_str());
 					tcpSocket.write((char*)response, response->PDULen);
