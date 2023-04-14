@@ -38,6 +38,8 @@ private slots:
 	void onBtnDeleteFileClicked();
 	void onBtnDownloadFileClicked();
 	void onBtnShareClicked();
+	void onBtnMoveClicked();
+	void onBtnSelectDirClicked();
 private:
 	QListWidget* m_BookList;
 	QPushButton* m_btnReturn;
@@ -49,6 +51,8 @@ private:
 	QPushButton* m_btnDownloadFile;
 	QPushButton* m_btnDeleteFile;
 	QPushButton* m_btnShare;
+	QPushButton* m_btnMove;
+	QPushButton* m_btnSelectDir;
 
 	QString strEnteredDir;
 	QString strUploadFilePath;
@@ -58,4 +62,8 @@ private:
 	bool m_bDownload;
 
 	QString m_strShareFileName;
+
+	QString m_strMoveFileName;
+	QString m_strMoveFilePath;
+	QString m_strDestDir;
 };

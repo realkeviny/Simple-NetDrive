@@ -30,6 +30,9 @@
 #define UPLOAD_FAILURE "Failed to upload!"
 #define DELETE_FILE_SUCCESS "Successfully Deleted File!"
 #define DELETE_FILE_FAILURE "Failed to delete file: not a file"
+#define MOVE_SUCCESS "Moved!"
+#define MOVE_FAILURE "Failed to move: not a directory"
+#define COMMON_ERROR "Operation Failed: System Busy..."
 
 enum MSG_TYPE
 {
@@ -72,6 +75,8 @@ enum MSG_TYPE
 	SHARE_FILE_RESPOND,//共享文件回应
 	SHARE_FILE_NOTIFICATION,//共享文件通知
 	SHARE_FILE_NOTIFICATION_RESPOND,
+	MOVE_FILE_REQUEST,//移动文件请求
+	MOVE_FILE_RESPOND,//移动文件回应
 	DELETE_FILE_REQUEST,//文件删除请求
 	DELETE_FILE_RESPOND,//文件删除回应
 	MAX = 0x00ffffff

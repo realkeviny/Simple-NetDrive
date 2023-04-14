@@ -345,6 +345,11 @@ void NetDrive::receiveMessage()
 			QMessageBox::information(this, "File Deletion", pdu->Data);
 			break;
 		}
+		case MOVE_FILE_RESPOND:
+		{
+			QMessageBox::information(this, "Move", pdu->Data);
+			break;
+		}
 		default:
 			break;
 		}
@@ -353,7 +358,11 @@ void NetDrive::receiveMessage()
 	}
 	else
 	{
-		QByteArray buffer = tcpSocket.readAll();
+		QByteArray buffer;
+		while (tcpSocket.bytesAvailable())
+		{
+			buffer.append(tcpSocket.readAll());
+		}
 		m_file.write(buffer);
 		BookWidget* pBook = OperationWidget::getInstance().getBook();
 		pBook->m_iReceived += buffer.size();

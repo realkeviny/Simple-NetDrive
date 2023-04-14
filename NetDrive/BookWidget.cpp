@@ -32,12 +32,17 @@ BookWidget::BookWidget(QWidget* parent)
 	m_btnDownloadFile = new QPushButton("Download");
 	m_btnDeleteFile = new QPushButton("Delete");
 	m_btnShare = new QPushButton("Share");
+	m_btnMove = new QPushButton("Move");
+	m_btnSelectDir = new QPushButton("Target Path");
+	m_btnSelectDir->setEnabled(false);
 
 	QVBoxLayout* fileButtonSet = new QVBoxLayout;
 	fileButtonSet->addWidget(m_btnUploadFile);
 	fileButtonSet->addWidget(m_btnDownloadFile);
 	fileButtonSet->addWidget(m_btnDeleteFile);
 	fileButtonSet->addWidget(m_btnShare);
+	fileButtonSet->addWidget(m_btnMove);
+	fileButtonSet->addWidget(m_btnSelectDir);
 
 	QHBoxLayout* mainLayout = new QHBoxLayout;
 	mainLayout->addWidget(m_BookList);
@@ -57,6 +62,8 @@ BookWidget::BookWidget(QWidget* parent)
 	connect(m_btnDownloadFile, SIGNAL(clicked()), this, SLOT(onBtnDownloadFileClicked()));
 	connect(m_btnDeleteFile, SIGNAL(clicked()), this, SLOT(onBtnDeleteFileClicked()));
 	connect(m_btnShare, SIGNAL(clicked()), this, SLOT(onBtnShareClicked()));
+	connect(m_btnMove, SIGNAL(clicked()), this, SLOT(onBtnMoveClicked()));
+	connect(m_btnSelectDir, SIGNAL(clicked()), this, SLOT(onBtnSelectDirClicked()));
 }
 
 BookWidget::~BookWidget()
@@ -396,4 +403,50 @@ void BookWidget::onBtnShareClicked()
 	{
 		ShareFile::getInstance().show();
 	}
+}
+
+void BookWidget::onBtnMoveClicked()
+{
+	QListWidgetItem* currentItem = m_BookList->currentItem();
+	if (currentItem != nullptr)
+	{
+		m_strMoveFileName = currentItem->text();
+		QString strCurPath = NetDrive::getInstance().getCurrentPath();
+		m_strMoveFilePath = strCurPath + '/' + m_strMoveFileName;
+
+		m_btnSelectDir->setEnabled(true);
+	}
+	else
+	{
+		QMessageBox::warning(this, "Move", "Please choose a file to move!");
+	}
+}
+
+void BookWidget::onBtnSelectDirClicked()
+{
+	QListWidgetItem* currentItem = m_BookList->currentItem();
+	if (currentItem != nullptr)
+	{
+		QString strDestDir = currentItem->text();
+		QString strCurPath = NetDrive::getInstance().getCurrentPath();
+		m_strDestDir = strCurPath + '/' + strDestDir;
+
+		int srcLength = m_strMoveFilePath.size();
+		int dstLength = m_strDestDir.size();
+		PDU* pdu = makePDU(srcLength + dstLength + 2);
+		pdu->MsgType = MOVE_FILE_REQUEST;
+		sprintf(pdu->Data, "%d %d %s", srcLength, dstLength, m_strMoveFileName.toStdString().c_str());
+
+		memcpy(pdu->Msg, m_strMoveFilePath.toStdString().c_str(), srcLength);
+		memcpy(reinterpret_cast<char*>(pdu->Msg) + (srcLength + 1), m_strDestDir.toStdString().c_str(), dstLength);
+
+		NetDrive::getInstance().getTcpSocket().write(reinterpret_cast<char*>(pdu), pdu->PDULen);
+		free(pdu);
+		pdu = nullptr;
+	}
+	else
+	{
+		QMessageBox::warning(this, "Move", "Please choose a file to move!");
+	}
+	m_btnSelectDir->setEnabled(false);
 }

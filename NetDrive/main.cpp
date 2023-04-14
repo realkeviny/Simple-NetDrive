@@ -12,5 +12,8 @@ int main(int argc, char* argv[])
 	//ShareFile sf;
 	//sf.test();
 	//sf.show();
+
+	//BookWidget bw;
+	//bw.show();
 	return a.exec();
 }

@@ -575,6 +575,49 @@ void TcpSocket::receiveMessage()
 			}
 			break;
 		}
+		case MOVE_FILE_REQUEST:
+		{
+			char caFileName[64] = { '\0' };
+			int srcLength = 0;
+			int dstLength = 0;
+			sscanf(pdu->Data, "%d %d %s", &srcLength, &dstLength, caFileName);
+
+			char* srcPath = new char[srcLength + 1];
+			char* dstPath = new char[dstLength + 1 + 64];
+			memset(srcPath, '\0', srcLength + 1);
+			memset(dstPath, '\0', dstLength + 1 + 64);
+
+			memcpy(srcPath, pdu->Msg, srcLength);
+			memcpy(dstPath, reinterpret_cast<char*>(pdu->Msg) + (srcLength + 1), dstLength);
+
+			PDU* resPDU = makePDU(0);
+			resPDU->MsgType = MOVE_FILE_RESPOND;
+			QFileInfo fileInfo(dstPath);
+			if (fileInfo.isDir())
+			{
+				strcat(dstPath, "/");
+				strcat(dstPath, caFileName);
+
+				bool ret = QFile::rename(srcPath, dstPath);
+				if (ret)
+				{
+					strcpy(resPDU->Data, MOVE_SUCCESS);
+				}
+				else
+				{
+					strcpy(resPDU->Data, COMMON_ERROR);
+				}
+			}
+			else if (fileInfo.isFile())
+			{
+				strcpy(resPDU->Data, MOVE_FAILURE);
+			}
+
+			write(reinterpret_cast<char*>(resPDU), resPDU->PDULen);
+			free(resPDU);
+			resPDU = nullptr;
+			break;
+		}
 		default:
 			break;
 		}
@@ -623,25 +666,18 @@ void TcpSocket::clientOffline()
 void TcpSocket::sendFileToClient()
 {
 	m_pTimer->stop();
-	char* pData = new char[4096];
+	const qint64 bufferSize = 4096;
+	char* pData = new char[bufferSize];
 	qint64 ret = 0;
-	while (true) {
-		ret = m_file.read(pData, 4096);
-		if (ret > 0 && ret <= 4096) {
-			write(pData, ret);
-		}
-		else if (0 == ret) {
-			m_file.close();
-			break;
-		}
-		else if (ret < 0) {
+	while ((ret = m_file.read(pData, bufferSize)) > 0) {
+		if (write(pData, ret) != ret) {
 			qDebug() << "发送文件给客户端失败!";
-			m_file.close();
 			break;
 		}
 	}
-	delete[]pData;
-	pData = 0;
+	m_file.close();
+	delete[] pData;
+	pData = nullptr;
 }
 
 QString TcpSocket::getName() const
